@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bocatómetro - PANEKO</title>
+
+<meta name="theme-color" content="#d49b11">
+
+<style>
+
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:#f5f5f5;
+}
+
+header{
+background:#d49b11;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+padding:15px;
+max-width:1000px;
+margin:auto;
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin-bottom:10px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+.card{
+background:white;
+padding:15px;
+margin-bottom:15px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,.15);
+}
+
+button{
+background:#d49b11;
+color:white;
+border:none;
+padding:10px 15px;
+border-radius:6px;
+cursor:pointer;
+}
+
+button:hover{
+opacity:.9;
+}
+
+.modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+right:0;
+bottom:0;
+background:rgba(0,0,0,.6);
+justify-content:center;
+align-items:center;
+}
+
+.modalContent{
+background:white;
+width:90%;
+max-width:600px;
+padding:20px;
+border-radius:12px;
+max-height:90vh;
+overflow:auto;
+}
+
+label{
+font-weight:bold;
+}
+
+.slider{
+width:100%;
+}
+
+.ranking{
+margin-top:40px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<h1>🥖 BOCATÓMETRO</h1>
+
+<h2>PANEKO</h2>
+
+<p>El pueblo decide el bocata</p>
+
+</header>
+
+<div class="container">
+
+<input
+id="buscar"
+placeholder="Buscar bocadillo">
+
+<select id="filtroIngrediente">
+<option value="">Todos los ingredientes</option>
+</select>
+
+<div id="lista"></div>
+
+<div class="ranking">
+
+<h2>🏆 Ranking</h2>
+
+<div id="ranking"></div>
+
+</div>
+
+</div>
+
+<div class="modal" id="modal">
+
+<div class="modalContent">
+
+<h2 id="titulo"></h2>
+
+<label>Sabor</label>
+<input class="slider" type="range" min="1" max="5" value="3" id="sabor">
+
+<label>Tamaño</label>
+<input class="slider" type="range" min="1" max="5" value="3" id="tamano">
+
+<label>Calidad</label>
+<input class="slider" type="range" min="1" max="5" value="3" id="calidad">
+
+<label>Estado del Pan</label>
+<input class="slider" type="range" min="1" max="5" value="3" id="pan">
+
+<div style="background:#fff4db;padding:10px;border-radius:8px;margin-top:10px">
+
+<b>Leyenda Estado del Pan</b><br>
+1 = Crudo<br>
+2 = Poco hecho<br>
+3 = En su punto<br>
+4 = Muy tostado<br>
+5 = Quemado
+
+</div>
+
+<br>
+
+<button onclick="guardarValoracion()">
+Enviar valoración
+</button>
+
+<button onclick="cerrarModal()">
+Cerrar
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+const bocadillos=[
+
+{
+nombre:"Florida",
+precio:7.50,
+ingredientes:["Pulled Pork","Cebolla pochada","Mozzarella"],
+media:0,
+votos:0
+},
+
+{
+nombre:"Puerta Bonita",
+precio:7.50,
+ingredientes:["Pulled Pork","Bechamel","Pesto"],
+media:0,
+votos:0
+},
+
+{
+nombre:"Proveedores",
+precio:7.50,
+ingredientes:["Pollo","Cheddar","Bacon","Pimiento verde"],
+media:0,
+votos:0
+},
+
+{
+nombre:"Huetos",
+precio:7.50,
+ingredientes:["Lomo","Bacon","Queso holandés"],
+media:0,
+votos:0
+},
+
+{
+nombre:"Tornos",
+precio:7.50,
+ingredientes:["Huevo","Chorizo picante","Mozzarella"],
+media:0,
+votos:0
+},
+
+{
+nombre:"Box 3",
+precio:7.50,
+ingredientes:["Papada","Oreja","Adobo"],
+media:0,
+votos:0
+},
+
+{
+nombre:"TPS",
+precio:7.50,
+ingredientes:["Tortilla","Idiazábal","Chorizo","Morcilla"],
+media:0,
+votos:0
+},
+
+{
+nombre:"Puerta Derecha",
+precio:7.50,
+ingredientes:["Tortilla","Queso","Picadillo","Tomate picante"],
+media:0,
+votos:0
+},
+
+{
+nombre:"Parque Tecnológico",
+precio:7.50,
+ingredientes:["Huevo","Bacon","Queso crema","Mozzarella"],
+media:0,
+votos:0
+},
+
+{
+nombre:"Ali Gobeo",
+precio:7.50,
+ingredientes:["Albóndigas","Tomate","Cebolla"],
+media:0,
+votos:0
+},
+
+{
+nombre:"Uritiasolo",
+precio:7.50,
+ingredientes:["Carne picada","Salsa verde","Queso"],
+media:0,
+votos:0
+},
+
+{
+nombre:"Betono",
+precio:7.50,
+ingredientes:["Lomo","Bacon","Pimiento verde","Cheddar"],
+media:0,
+votos:0
+},
+
+{
+nombre:"Aeropuerto",
+precio:7.50,
+ingredientes:["Pollo","Bacon","Queso","Bechamel"],
+media:0,
+votos:0
+},
+
+{
+nombre:"Miñano",
+precio:7.50,
+ingredientes:["Pollo","York","Queso holandés","Puerro","Rúcula"],
+media:0,
+votos:0
+}
+
+];
+
+let seleccionado=null;
+
+function cargarIngredientes(){
+
+let set=new Set();
+
+bocadillos.forEach(b=>{
+b.ingredientes.forEach(i=>set.add(i));
+});
+
+const combo=
+document.getElementById("filtroIngrediente");
+
+[...set].sort().forEach(i=>{
+
+combo.innerHTML+=
+`<option value="${i}">${i}</option>`;
+
+});
+
+}
+
+function render(){
+
+const texto=
+document.getElementById("buscar")
+.value
+.toLowerCase();
+
+const ingrediente=
+document.getElementById("filtroIngrediente")
+.value;
+
+const lista=
+document.getElementById("lista");
+
+lista.innerHTML="";
+
+bocadillos
+.filter(b=>{
+
+const okNombre=
+b.nombre.toLowerCase().includes(texto);
+
+const okIngrediente=
+!ingrediente ||
+b.ingredientes.includes(ingrediente);
+
+return okNombre && okIngrediente;
+
+})
+.forEach((b,index)=>{
+
+lista.innerHTML+=`
+<div class="card">
+
+<h3>${b.nombre}</h3>
+
+<p>
+💰 ${b.precio.toFixed(2)} €
+</p>
+
+<p>
+${b.ingredientes.join(" · ")}
+</p>
+
+<p>
+⭐ ${b.media.toFixed(1)}
+</p>
+
+<button onclick="abrirModal(${index})">
+Valorar
+</button>
+
+</div>
+`;
+});
+
+ranking();
+}
+
+function ranking(){
+
+let datos=[...bocadillos]
+.sort((a,b)=>
+b.media-a.media);
+
+let html="";
+
+datos.forEach((b,i)=>{
+
+html+=`
+<div class="card">
+
+${i+1}. ${b.nombre}
+<br>
+⭐ ${b.media.toFixed(1)}
+
+</div>`;
+});
+
+document.getElementById("ranking")
+.innerHTML=html;
+
+}
+
+function abrirModal(i){
+
+seleccionado=i;
+
+document.getElementById("titulo")
+.innerText=
+bocadillos[i].nombre;
+
+document.getElementById("modal")
+.style.display="flex";
+
+}
+
+function cerrarModal(){
+
+document.getElementById("modal")
+.style.display="none";
+
+}
+
+function guardarValoracion(){
+
+let sabor=
+Number(
+document.getElementById("sabor").value
+);
+
+let tamano=
+Number(
+document.getElementById("tamano").value
+);
+
+let calidad=
+Number(
+document.getElementById("calidad").value
+);
+
+let pan=
+Number(
+document.getElementById("pan").value
+);
+
+let nota=
+sabor*0.4+
+tamano*0.2+
+calidad*0.2+
+pan*0.2;
+
+let b=
+bocadillos[seleccionado];
+
+b.media=
+(
+(b.media*b.votos)+nota
+)
+/(b.votos+1);
+
+b.votos++;
+
+cerrarModal();
+
+render();
+
+alert("✅ Gracias por tu valoración");
+
+}
+
+document
+.getElementById("buscar")
+.addEventListener("input",render);
+
+document
+.getElementById("filtroIngrediente")
+.addEventListener("change",render);
+
+cargarIngredientes();
+render();
+
+</script>
+
+</body>
+</html>
+
